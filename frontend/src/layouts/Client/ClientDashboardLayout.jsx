@@ -1,9 +1,44 @@
-import React from "react";
-import { Link, Outlet } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, Outlet, useNavigate } from "react-router-dom";
+import { axiosClient } from "../../api/axios";
+import Transactions from "./../../pages/Transactions";
+import { useTransactionContext } from "../../context/TransactionContext";
+import Api from "../../services/Api";
+import { useUserContext } from "../../context/UserContext";
+import { LOGIN } from "../../router";
 
+export default function ClientDashboardLayout() {
+    const navigate = useNavigate();
+    // const [transaction, setTransaction] = useState({});
+    const { transaction, setTransaction } = useTransactionContext();
+    const { user, setUser } = useUserContext();
+    const context  = useUserContext();
+    const [loading, setLoading] = useState(true);
+    
 
+    useEffect(() => {
+        console.log(context);
+        if(!context.authenticated)
+        {
+            navigate(LOGIN)
+        }
+        fetchData();
 
-export default function Layout() {
+        // Api.getUser().then(({data}) => {
+        //     setUser(data)
+        // })
+    }, []);
+
+    const fetchData = async () => {
+        const transactions = await Api.getTransaction();
+        setTransaction(transactions);
+        setLoading(false);
+    };
+
+    useEffect(() => {
+
+    },[])
+
     return (
         <>
             <header>
@@ -19,7 +54,10 @@ export default function Layout() {
                                 src="https://img.icons8.com/avantgarde/100/wallet.png"
                                 alt="wallet"
                             />
-                            <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white text-blue-800" style={{ fontFamily: 'Tac One, sans-serif' }}>
+                            <span
+                                className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white text-blue-800"
+                                style={{ fontFamily: "Tac One, sans-serif" }}
+                            >
                                 YOUWALLET
                             </span>
                         </a>
@@ -69,10 +107,7 @@ export default function Layout() {
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link to={"/login"}>Login</Link>
-                                </li>
-                                <li>
-                                    <Link to={"/signup"}>Register</Link>
+                                    <Link to={"/logout"}>Log out</Link>
                                 </li>
                             </ul>
                         </div>
@@ -80,7 +115,11 @@ export default function Layout() {
                 </nav>
             </header>
             <main>
-                <Outlet />
+                {location.pathname === "/transactions" ? (
+                    <Transactions transactions={transaction} loading={loading} />
+                ) : (
+                    <Outlet />
+                )}
             </main>
             <footer>Footer</footer>
         </>

@@ -15,7 +15,7 @@ class Transaction extends Model
         'sender_wallet_id',
         'receiver_wallet_id'
     ];
-
+    
 
     protected static function boot()
     {
@@ -25,4 +25,15 @@ class Transaction extends Model
             $model->{$model->getKeyName()} = Str::uuid();
         });
     }
+
+    public function senderWallet()
+    {
+        return $this->belongsTo(Wallet::class, 'sender_wallet_id');
+    }
+
+    public function receiverWallet()
+    {
+        return $this->belongsTo(Wallet::class, 'receiver_wallet_id');
+    }
+
 }

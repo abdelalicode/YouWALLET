@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use App\Models\Wallet;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,7 @@ class TransationController extends Controller
         $request->validate([
             'amount' => 'required|numeric|min:0',
             'receiver_wallet_id' => 'required|exists:wallets,id',
-            
+
         ]);
 
         $senderWallet = Auth::user()->wallet;
@@ -40,17 +41,19 @@ class TransationController extends Controller
 
             return response()->json(['message' => 'Money transfer successful']);
         } catch (\Exception $e) {
-             DB::rollback();
-          return response()->json(['error' => 'Transaction failed. Please try again.'], 500);
-         }
+            DB::rollback();
+            return response()->json(['error' => 'Transaction failed. Please try again.'], 500);
+        }
     }
 
     public function getSTransactions()
     {
-        $transactions = Transaction::where('sender_wallet_id' , Auth::user()->wallet->id)->get();
+
+        $transactions = Transaction::with('senderWallet.user', 'receiverWallet.user')->where('sender_wallet_id', Auth::user()->wallet->id)
+            ->get();
 
         if ($transactions->isEmpty()) {
-            return response()->json(['message' => 'No transactions available'], 200);
+            return response()->json(['No transactions available'], 200);
         }
 
         return response()->json($transactions);
@@ -59,16 +62,16 @@ class TransationController extends Controller
 
     public function getRTransactions()
     {
-        $transactions = Transaction::where('receiver_wallet_id' , Auth::user()->wallet->id)->get();
+        $transactions = Transaction::where('receiver_wallet_id', Auth::user()->wallet->id)->get();
 
         if ($transactions->isEmpty()) {
-            return response()->json(['message' => 'No transactions available'], 200);
+            return response()->json(['No transactions available'], 200);
         }
 
         return response()->json($transactions);
     }
 
-    
+
 
     private function insertTransaction($amount, $senderWalletId, $receiverWalletId)
     {
@@ -76,7 +79,7 @@ class TransationController extends Controller
             'amount' => $amount,
             'sender_wallet_id' => $senderWalletId,
             'receiver_wallet_id' => $receiverWalletId,
-            
+
         ]);
     }
 }

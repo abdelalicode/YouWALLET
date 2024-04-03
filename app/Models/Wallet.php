@@ -19,6 +19,12 @@ class Wallet extends Model
         'user_id'
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    
     protected static function boot()
     {
         parent::boot();
@@ -26,5 +32,10 @@ class Wallet extends Model
         static::creating(function ($model) {
             $model->{$model->getKeyName()} = (string) Str::uuid();
         });
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
     }
 }
