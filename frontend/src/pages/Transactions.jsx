@@ -103,9 +103,9 @@ export default function Transactions({ transactions, loading }) {
                             <div className="front-content">
                                 
                                 <p>
-                                    <div className="text-sm font-medium"> - Receiver</div>
-                                    {transaction.receiver_wallet.user.firstname}{" "}
-                                    {transaction.receiver_wallet.user.lastname}
+                                    <div className="text-sm font-medium"> - Sender</div>
+                                    {transaction.sender_wallet.user.firstname}{" "}
+                                    {transaction.sender_wallet.user.lastname}
                                 </p>
                             </div>
                             <div className="content">
@@ -116,7 +116,7 @@ export default function Transactions({ transactions, loading }) {
                                     {transaction.amount} {"DH"}
                                 </p>
                                 <p>
-                                    You send it at :{" "}
+                                    You received it at :{" "}
                                     {new Date(transaction.created_at).toLocaleString()}
                                 </p>
                             </div>

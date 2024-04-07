@@ -10,6 +10,8 @@ export const  UserStateContext = createContext({
 
     user: {},
     setUser: () => {},
+    allUsers: {},
+    setAllUsers: () => {},
     authenticated : false, 
     logout: ()=>{},
     login: (email, password) => {},
@@ -18,22 +20,36 @@ export const  UserStateContext = createContext({
 
 export default function UserContext({children}) {
     const [user, setUser]= useState({})
+    const [allUsers, setAllUsers]= useState({})
 
-    const [authenticated, setAuthenticated ] =useState(false)
+    const [authenticated, _setAuthenticated ] =useState(window.localStorage.getItem('AUTHENTICATED'))
 
     const login = async (email, password) => {
        return  Api.login(email, password)
-       
-        
+     
     }
 
-    const logout =  () => {}
+
+
+    const logout =  () => {
+
+      setUser({});
+      _setAuthenticated(false);
+    }
+
+    const setAuthenticated = (isAuthenticated) =>
+    {
+      _setAuthenticated(isAuthenticated)
+      window.localStorage.setItem('AUTHENTICATED', isAuthenticated)
+    }
 
   return (
         
     <UserStateContext.Provider value={{
         user,
         setUser,
+        allUsers,
+        setAllUsers,
         login,
         logout,
         authenticated,

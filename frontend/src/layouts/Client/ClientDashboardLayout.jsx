@@ -6,38 +6,56 @@ import { useTransactionContext } from "../../context/TransactionContext";
 import Api from "../../services/Api";
 import { useUserContext } from "../../context/UserContext";
 import { LOGIN } from "../../router";
+import { Button } from '@/components/ui/button';
 
 export default function ClientDashboardLayout() {
     const navigate = useNavigate();
     // const [transaction, setTransaction] = useState({});
     const { transaction, setTransaction } = useTransactionContext();
-    const { user, setUser } = useUserContext();
-    const context  = useUserContext();
+    const { user, setUser, authenticated, setAuthenticated, logout:contextLogout } = useUserContext();
+    const context = useUserContext();
     const [loading, setLoading] = useState(true);
-    
 
     useEffect(() => {
-        console.log(context);
-        if(!context.authenticated)
-        {
-            navigate(LOGIN)
-        }
         fetchData();
 
-        // Api.getUser().then(({data}) => {
-        //     setUser(data)
-        // })
+        Api.getUser()
+            .then(({ data }) => {
+                setUser(data);
+                if(data.role.name == "admin")
+                {
+                    navigate('/admin')
+                }
+                setAuthenticated(true);
+                
+            })
+            .catch((reason) => {
+                contextLogout()
+                navigate(LOGIN);
+            });
+
+            
     }, []);
+
+    
+
+   
+   
+
 
     const fetchData = async () => {
         const transactions = await Api.getTransaction();
         setTransaction(transactions);
         setLoading(false);
     };
+    
+    const logout = async () => {
+        Api.logout().then(() => {
+            contextLogout()
+            navigate(LOGIN);
+        })
+    }
 
-    useEffect(() => {
-
-    },[])
 
     return (
         <>
@@ -45,7 +63,7 @@ export default function ClientDashboardLayout() {
                 <nav className="bg-white border-gray-200 dark:bg-gray-900">
                     <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
                         <a
-                            href="https://flowbite.com/"
+                            href="/"
                             className="flex items-center space-x-3 rtl:space-x-reverse"
                         >
                             <img
@@ -62,12 +80,6 @@ export default function ClientDashboardLayout() {
                             </span>
                         </a>
                         <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-                            <button
-                                type="button"
-                                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                            >
-                                Send Money
-                            </button>
                             <button
                                 data-collapse-toggle="navbar-cta"
                                 type="button"
@@ -97,7 +109,7 @@ export default function ClientDashboardLayout() {
                             className="items-center justify-between hidden w-full md:flex md:w-auto md:order-1"
                             id="navbar-cta"
                         >
-                            <ul className="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+                            <ul className="flex place-items-center flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
                                 <li>
                                     <Link to={"/"}>Home</Link>
                                 </li>
@@ -107,7 +119,8 @@ export default function ClientDashboardLayout() {
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link to={"/logout"}>Log out</Link>
+                                    <Button onClick={logout}>Log out</Button>
+                                    <Link to={"/logout"}></Link>
                                 </li>
                             </ul>
                         </div>
@@ -116,12 +129,15 @@ export default function ClientDashboardLayout() {
             </header>
             <main>
                 {location.pathname === "/transactions" ? (
-                    <Transactions transactions={transaction} loading={loading} />
+                    <Transactions
+                        transactions={transaction}
+                        loading={loading}
+                    />
                 ) : (
-                    <Outlet />
+                    <Outlet user={user} />
                 )}
             </main>
-            <footer>Footer</footer>
+            <footer></footer>
         </>
     );
 }

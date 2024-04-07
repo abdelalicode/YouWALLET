@@ -1,4 +1,5 @@
 import { axiosClient } from "../api/axios";
+import SendTransaction from "../pages/SendTransaction";
 
 
 
@@ -12,6 +13,14 @@ const Api = {
 
     login : async (email, password) => {
         return  await axiosClient.post("api/login", {email, password})
+    },
+
+    logout : async () => {
+        return  await axiosClient.post("logout")
+    },
+
+    SendTransaction: async (receiver_wallet_id, amount) => {
+        return await axiosClient.post("api/transfer", {receiver_wallet_id, amount})
     },
 
     getTransaction : async () => {
@@ -33,7 +42,11 @@ const Api = {
 
     getUser: async () => {
       return await  axiosClient.get('api/user')
-    }
+    },
+
+    UpdateProfile: async (firstname, lastname, email) => {
+        return await axiosClient.put("/api/update", {firstname, lastname, email})
+    },
 }
 
 export default Api;

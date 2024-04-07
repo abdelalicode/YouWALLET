@@ -7,11 +7,18 @@ import NotFound from '../pages/NotFound';
 import Layout from './../layouts/Layout';
 import ClientDashboardLayout from '../layouts/Client/ClientDashboardLayout';
 import GuestLayout from '../layouts/GuestLayout';
+import SendTransaction from '../pages/SendTransaction';
+import UpdateProfile from '../pages/UpdateProfile';
+import ADminDashboardLayout from '../layouts/Admin/AdminDashboardLayout';
+import AdminHome from '../pages/AdminHome';
 
 
 export const HOME = '/';
+export const ADMINHOME = '/admin';
 export const TRANSACTIONS = '/transactions';
+export const SENDTRANSACTION = '/sentransaction';
 export const LOGIN = '/login';
+export const UPDATEPROFILE = '/updateprofile';
 
 export const router = createBrowserRouter([
 
@@ -56,9 +63,33 @@ export const router = createBrowserRouter([
                 path: TRANSACTIONS ,
                 element: <Transactions/>
             },
+            {
+                path: SENDTRANSACTION ,
+                element: <SendTransaction/>
+            },
+            {
+                path: UPDATEPROFILE ,
+                element: <UpdateProfile/>
+            },
+
             
         ]
-    }
+    },
+    {
+        element : <ADminDashboardLayout/>,
+        children: [
+
+            {
+                path: ADMINHOME ,
+                element: <AdminHome/>
+            },
+
+            
+
+        ]
+    },
+
+
     
     
 

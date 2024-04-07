@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { axiosClient } from "../../api/axios";
 import { useNavigate } from "react-router";
-import { HOME } from "./../../router/index";
+import { ADMINHOME, HOME } from "./../../router/index";
 import { useTransactionContext } from "../../context/TransactionContext";
 import { useUserContext } from "../../context/UserContext";
 
@@ -38,28 +38,34 @@ export default function ClientLogin() {
 
     const [loading, setLoading] = useState(false);
 
-    const onSubmit = async values => {
+    const onSubmit = async (values) => {
         setLoading(true);
-       await context.login(values.email, values.password)
-       
-       .then((value) => {
-        if (value.status === 200) {
-            setAuthenticated(true);
-            navigate(HOME);
-        }
+        await context.login(values.email, values.password)
+            .then((value) => {
+                
+                if (value.status === 200) {
+                    setAuthenticated(true);
+                    if(value.data.data.user.role_id === 2)
+                    {
+                        navigate(HOME);
+                    }
+                    else if (value.data.data.user.role_id === 1)
+                    {
+                        navigate(ADMINHOME);
+                    }
+                    
+                }
+            })
+            .catch(({ response }) => {
+                // console.log(response.data.data.error);
+                form.setError("globalError", {
+                    message: response.data.data.error,
+                });
+            });
 
-    }).catch(({ response }) => {
-        // console.log(response.data.data.error);
-        form.setError("globalError", {
-            message: response.data.data.error,
-        });
-    }); 
-         
-        
-           setLoading(false);
-    
+        setLoading(false);
     };
-/****/
+    /****/
 
     return (
         <div className="mt-24 mx-96 space-y-4">

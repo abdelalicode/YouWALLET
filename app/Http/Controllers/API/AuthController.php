@@ -81,19 +81,52 @@ class AuthController extends BaseController
             $user = Auth::user();
             $success['token'] =  $user->createToken('MyApp')->plainTextToken;
             $success['user'] =  $user;
+            
             return $this->sendResponse($success, 'User logged in successfully.');
         }
     }
-    
+
+
+    public function updateProfile(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'firstname' => 'required',
+            'lastname' => 'required',
+            'email' => 'required|email',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors());
+        }
+
+        $input = $request->only('firstname', 'lastname', 'email');
+
+        try {
+            $user = User::find(Auth::id());
+            $user->update($input);
+
+            if ($request->filled('password')) {
+                $user->password = Hash::make($request->password);
+            }
+
+            $user->save();
+
+            return $this->sendResponse($user, 'Profile updated successfully.');
+        } catch (\Exception $e) {
+            if (Str::contains($e->getMessage(), 'Duplicate entry')) {
+                return $this->sendError('Email already taken.', [], 400);
+            }
+            return $this->sendError('Failed to update profile.', [], 500);
+        }
+    }
 
     public function logout(Request $request)
     {
 
-        
-            $user = auth()->user();
-            // $user->tokens()->where('id', $user->currentAccessToken()->id)->delete();
-            $user->currentAccessToken()->delete();
-            return $this->sendResponse([], 'User logout successfully.');
-        
+
+        $user = auth()->user();
+        // $user->tokens()->where('id', $user->currentAccessToken()->id)->delete();
+        $user->currentAccessToken()->delete();
+        return $this->sendResponse([], 'User logout successfully.');
     }
 }

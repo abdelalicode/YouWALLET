@@ -23,6 +23,9 @@ class TransationController extends Controller
 
         $receiverWalletId = $request->receiver_wallet_id;
         $receiverWallet = Wallet::findOrFail($receiverWalletId);
+        
+
+        
 
         if ($senderWallet->balance < $request->amount) {
             return response()->json(['error' => 'Insufficient balance'], 422);
@@ -49,8 +52,19 @@ class TransationController extends Controller
     public function getSTransactions()
     {
 
-        $transactions = Transaction::with('senderWallet.user', 'receiverWallet.user')->where('sender_wallet_id', Auth::user()->wallet->id)
+        if(Auth::user()->role->name == 'admin')
+        {
+            $transactions = Transaction::with('senderWallet.user', 'receiverWallet.user')
             ->get();
+        }
+        else
+        {
+
+            $transactions = Transaction::with('senderWallet.user', 'receiverWallet.user')->where('sender_wallet_id', Auth::user()->wallet->id)
+            ->get();
+        }
+
+        
 
         if ($transactions->isEmpty()) {
             return response()->json(['No transactions available'], 200);
@@ -62,7 +76,7 @@ class TransationController extends Controller
 
     public function getRTransactions()
     {
-        $transactions = Transaction::where('receiver_wallet_id', Auth::user()->wallet->id)->get();
+        $transactions = Transaction::with('senderWallet.user', 'receiverWallet.user')->where('receiver_wallet_id', Auth::user()->wallet->id)->get();
 
         if ($transactions->isEmpty()) {
             return response()->json(['No transactions available'], 200);

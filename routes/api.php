@@ -17,13 +17,15 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
-    return $request->user();
+    $user = $request->user()->load('wallet', 'role');
+    return $user;
 });
 
 
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->post('logout', [AuthController::class, 'logout']);
+Route::put('update', [AuthController::class, 'updateProfile']);
 
 Route::middleware('auth:sanctum')->post('transfer', [TransationController::class, 'transfer']);
 Route::middleware('auth:sanctum')->get('senttrans', [TransationController::class, 'getSTransactions']);

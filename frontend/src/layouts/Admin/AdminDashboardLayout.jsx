@@ -1,26 +1,58 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import { HOME } from './../router/index';
-import { useTransactionContext } from "../context/TransactionContext";
-import { useUserContext } from "../context/UserContext";
+import { axiosClient } from "../../api/axios";
+import Transactions from "../../pages/Transactions";
+import { useTransactionContext } from "../../context/TransactionContext";
+import Api from "../../services/Api";
+import { useUserContext } from "../../context/UserContext";
+import { LOGIN } from "../../router";
+import { Button } from "@/components/ui/button";
+import AdminHome from './../../pages/AdminHome';
 
-
-
-export default function GuestLayout() {
-
-
+export default function ADminDashboardLayout() {
     const navigate = useNavigate();
+    // const [transaction, setTransaction] = useState({});
+    const { transaction, setTransaction } = useTransactionContext();
+    const {
+        user,
+        setUser,
+        authenticated,
+        setAuthenticated,
+        logout: contextLogout,
+    } = useUserContext();
     const context = useUserContext();
+    const [loading, setLoading] = useState(true);
 
-    useEffect( ()=> {
+    useEffect(() => {
+        fetchData();
 
-        if (context.authenticated)
-        {
-            navigate(HOME)
-        }
-
-
+        Api.getUser()
+            .then(({ data }) => {
+                setUser(data);
+                if (data.role.name == "client") {
+                    navigate("/");
+                }
+                setAuthenticated(true);
+            })
+            .catch((reason) => {
+                contextLogout();
+                navigate(LOGIN);
+            });
     }, []);
+
+    const fetchData = async () => {
+        const transactions = await Api.getTransaction();
+        setTransaction(transactions);
+        setLoading(false);
+    };
+
+    const logout = async () => {
+        Api.logout().then(() => {
+            contextLogout();
+            navigate(LOGIN);
+        });
+    };
+
     return (
         <>
             <header>
@@ -36,12 +68,14 @@ export default function GuestLayout() {
                                 src="https://img.icons8.com/avantgarde/100/wallet.png"
                                 alt="wallet"
                             />
-                            <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white text-blue-800" style={{ fontFamily: 'Tac One, sans-serif' }}>
+                            <span
+                                className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white text-blue-800"
+                                style={{ fontFamily: "Tac One, sans-serif" }}
+                            >
                                 YOUWALLET
                             </span>
                         </a>
                         <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-                            
                             <button
                                 data-collapse-toggle="navbar-cta"
                                 type="button"
@@ -71,21 +105,26 @@ export default function GuestLayout() {
                             className="items-center justify-between hidden w-full md:flex md:w-auto md:order-1"
                             id="navbar-cta"
                         >
-                            <ul className="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+                            <ul className="flex place-items-center flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
                                 <li>
-                                    <Link to={"/login"}>Login</Link>
+                                    <Link to={"/admin"}>
+                                        All Transactions
+                                    </Link>
                                 </li>
                                 <li>
-                                    <Link to={"/signup"}>Register</Link>
+                                    <Button onClick={logout}>Log out</Button>
+                                    <Link to={"/logout"}></Link>
                                 </li>
                             </ul>
                         </div>
                     </div>
                 </nav>
             </header>
-            <main>
-                <Outlet />
+            <main> 
+                   <h1 className="mt-12 ml-24 text-4xl font-medium">Welcome to your Admin Dashboard</h1> 
+                    <AdminHome transactions={transaction} loading={loading} />
             </main>
+            <footer></footer>
         </>
     );
 }
